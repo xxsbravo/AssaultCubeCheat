@@ -23,6 +23,7 @@ private:
 		std::cout << "Press Numpad [3]: Ammo Hack" << std::endl;
 		std::cout << "Press Numpad [4]: Recoil Hack" << std::endl;
 		std::cout << "Press Numpad [5]: Ghost Hack" << std::endl;
+		std::cout << "Press ['c']: Blink/End Blink" << std::endl;
 
 		return f;
 	}

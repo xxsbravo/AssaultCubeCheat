@@ -5,11 +5,11 @@ typedef BOOL(__stdcall* twglSwapBuffers)(HDC hDc);
 twglSwapBuffers owglSwapBuffers;
 
 bool bHealth = false, bArmor = false, bAmmo = false,
-bRecoil = false, bGhost = false;
+bRecoil = false, bGhost = false, bBlink = false;
 
 DWORD process_identifier = GetProcessIdentifier(L"ac_client.exe");
 uintptr_t base_module_address = GetModuleBaseAddress(L"ac_client.exe", process_identifier);
-uintptr_t* local_player_pointer = (uintptr_t*)(base_module_address + 0x10f4f4);
+uintptr_t* local_player_pointer = (uintptr_t*)(base_module_address + 0x187C0C);
 
 BOOL __stdcall hkwglSwapBuffers(HDC hDc)
 {
@@ -19,7 +19,7 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
 
 		if (bHealth)
 		{
-			int health = (*local_player_pointer + 0xF8);
+			int health = (*local_player_pointer + 0xEC);
 			*(int*)health = 1337;
 		}
 	}
@@ -30,7 +30,7 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
 
 		if (bArmor)
 		{
-			int armor = (*local_player_pointer + 0xFC);
+			int armor = (*local_player_pointer + 0xF0);
 			*(int*)armor = 1337;
 		}
 	}
@@ -41,7 +41,7 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
 
 		if (bAmmo)
 		{
-			uintptr_t ammoAddr = mem::FindMultiLevelPointer((uintptr_t)local_player_pointer, { 0x374, 0x14, 0x0 });
+			uintptr_t ammoAddr = mem::FindMultiLevelPointer((uintptr_t)local_player_pointer, { 0x368, 0x14, 0x0 });
 			int* ammo = (int*)(ammoAddr);
 			*(ammo) = 1337;
 		}
@@ -63,15 +63,37 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
 
 		if (bGhost)
 		{
-			BYTE* ghostMode = (BYTE*)(*local_player_pointer + 0x82);
-			*ghostMode = 5;
+			BYTE* ghostMode = (BYTE*)(*local_player_pointer + 0x76);
+			BYTE* flyMode = (BYTE*)(*local_player_pointer + 0x318);
+			*ghostMode = 6;
+			*flyMode = 5;
 		}
 		else
 		{
-			BYTE* ghostMode = (BYTE*)(*local_player_pointer + 0x82);
+			BYTE* ghostMode = (BYTE*)(*local_player_pointer + 0x76);
+			BYTE* flyMode = (BYTE*)(*local_player_pointer + 0x318);
 			*ghostMode = 0;
+			*flyMode = 0;
 		}
 	}
+
+	if (GetAsyncKeyState(0x43) & 1)
+	{
+		bBlink = !bBlink;
+
+		if (bBlink)
+		{
+			BYTE* blink = (BYTE*)(*local_player_pointer + 0x74);
+			*blink = 100;
+
+		}
+		else
+		{
+			BYTE* blink = (BYTE*)(*local_player_pointer + 0x74);
+			*blink = 0;
+		}
+	}
+
 	return owglSwapBuffers(hDc);
 }
 
